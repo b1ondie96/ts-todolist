@@ -8,42 +8,54 @@ import Todo from "./Todo";
 import Typography from "@mui/material/Typography";
 import { nanoid } from "nanoid";
 import { Button } from "@mui/material";
+import { motion } from "framer-motion";
 interface Todos {
-id:string,
-task:string,
-done:boolean
+  id: string;
+  task: string;
+  done: boolean;
 }
 
 function ToDoList() {
   const [textErr, setTextErr] = useState(false);
-  const [todos, setTodos] = useState<Todos[]>(JSON.parse(window.localStorage.getItem("todos")!)||[]);
+  const [todos, setTodos] = useState<Todos[]>(
+    JSON.parse(window.localStorage.getItem("todos")!) || []
+  );
   const [todo, setTodo] = useState({ task: "" });
   const [snack, setSnack] = useState({ show: false, msg: "" });
+  const itemAnimation = {
+    hidden: { x: -2000 },
+    animate: {
+      x: 0,
+      transition: {
+        duration: 0.5,
+        type: "easeOut",
+      },
+    },
+    exit: { opacity: 0 },
+  };
+  useEffect(() => {
+    window.localStorage.setItem("todos", JSON.stringify(todos));
+  }, [todos]);
 
- useEffect(() => {
-  window.localStorage.setItem("todos", JSON.stringify(todos));
- }, [todos]);
- 
-  const addTodo = (e:React.BaseSyntheticEvent) => {
+  const addTodo = (e: React.BaseSyntheticEvent) => {
     e.preventDefault();
     if (todo.task.length >= 4) {
       setTextErr(false);
-      setTodos([{ ...todo, id: nanoid(), done:false }, ...todos]);
+      setTodos([{ ...todo, id: nanoid(), done: false }, ...todos]);
       setTodo({ task: "" });
       setSnack({ ...snack, show: true, msg: "Task added" });
-      
     } else {
       setTextErr(true);
     }
   };
-  const removeTodo = (id:string) => {
+  const removeTodo = (id: string) => {
     setTodos(todos.filter((todo) => todo.id !== id));
     setSnack({ ...snack, show: true, msg: "Task deleted" });
   };
-  const handleChange = (e:React.BaseSyntheticEvent) => {
-    setTodo({ ...todo, task: e.target.value, });
+  const handleChange = (e: React.BaseSyntheticEvent) => {
+    setTodo({ ...todo, task: e.target.value });
   };
-  const editTask = (id:string, editTask:string) => {
+  const editTask = (id: string, editTask: string) => {
     setTodos(
       todos.map((t) => {
         if (t.id === id) {
@@ -54,7 +66,7 @@ function ToDoList() {
       })
     );
   };
-  const handleCheck = (id:string) => {
+  const handleCheck = (id: string) => {
     setTodos(
       todos.map((t) => {
         if (t.id === id) {
@@ -81,7 +93,7 @@ function ToDoList() {
         onSubmit={addTodo}
       >
         <Typography variant="h5">What do you want to do?</Typography>
-        <Button onClick={()=>window.localStorage.clear()}>Delete all</Button>
+        <Button onClick={() => setTodos([])}>Delete all tasks</Button>
         <div style={{ display: "flex", alignItems: "center" }}>
           <TextField
             error={textErr}
@@ -108,15 +120,22 @@ function ToDoList() {
 
       <div className="todolist">
         {todos.map((todo) => (
-          <Todo
-            key={todo.id}
-            id={todo.id}
-            done={todo.done}
-            task={todo.task}
-            toggleDone={handleCheck}
-            remove={removeTodo}
-            edit={editTask}
-          />
+          <motion.div
+            variants={itemAnimation}
+            initial="hidden"
+            animate="animate"
+            exit="exit"
+          >
+            <Todo
+              key={todo.id}
+              id={todo.id}
+              done={todo.done}
+              task={todo.task}
+              toggleDone={handleCheck}
+              remove={removeTodo}
+              edit={editTask}
+            />
+          </motion.div>
         ))}
       </div>
 
