@@ -8,7 +8,10 @@ import Todo from "./Todo";
 import Typography from "@mui/material/Typography";
 import { nanoid } from "nanoid";
 import { Button } from "@mui/material";
-import { motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
+
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+
 interface Todos {
   id: string;
   task: string;
@@ -119,14 +122,10 @@ function ToDoList() {
       </Box>
 
       <div className="todolist">
-        {todos.map((todo) => (
-          <motion.div
-            variants={itemAnimation}
-            initial="hidden"
-            animate="animate"
-            exit="exit"
-          >
+        <AnimatePresence initial={false}>
+          {todos.map((todo, index) => (
             <Todo
+              index={index}
               key={todo.id}
               id={todo.id}
               done={todo.done}
@@ -135,8 +134,8 @@ function ToDoList() {
               remove={removeTodo}
               edit={editTask}
             />
-          </motion.div>
-        ))}
+          ))}
+        </AnimatePresence>
       </div>
 
       <Snackbar
