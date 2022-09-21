@@ -8,6 +8,7 @@ import DialogContent from "@mui/material/DialogContent";
 import LoginForm from "./LoginForm";
 import {Typography } from "@mui/material";
 import SignupForm from "./SignupForm";
+import LoginModal from "./LoginModal";
 interface Props {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -27,12 +28,8 @@ const UserModal: React.FC<Props> = ({ open, setOpen }) => {
         <DialogContent>
           {login ? (
             <>
-              <LoginForm setOpen={setOpen}/>
-              <Typography align="center">
-                <Button variant="text" onClick={() => switchLogin(false)}>
-                  Dont have an account?
-                </Button>
-              </Typography>
+              <LoginModal switchLogin={switchLogin} setOpen={setOpen}/>
+              
             </>
           ) : (<>
           <SignupForm setOpen={setOpen} />

@@ -6,11 +6,8 @@ import CheckIcon from "@mui/icons-material/Check";
 import Snackbar from "@mui/material/Snackbar";
 import Todo from "./Todo";
 import Typography from "@mui/material/Typography";
-import { nanoid } from "nanoid";
-import { Button } from "@mui/material";
 import { AnimatePresence } from "framer-motion";
 import { db } from "./firebase";
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import {
   addDoc,
   collection,
@@ -22,7 +19,6 @@ import {
   deleteDoc,
   query,
   onSnapshot,
-  Timestamp,
 } from "firebase/firestore";
 import { UserContext } from "./App";
 
@@ -37,7 +33,7 @@ interface Props {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const ToDoList: React.FC<Props> = ({ setOpen }) => {
+const ToDoList: React.FC<Props> = () => {
   const [textErr, setTextErr] = useState(false);
   const [todos, setTodos] = useState<Todos[]>([]);
   const [todo, setTodo] = useState({ task: "" });
@@ -55,20 +51,10 @@ const ToDoList: React.FC<Props> = ({ setOpen }) => {
       });
     });
    }
-  /* const getTodos = async () => {
-    const querySnapshot = await getDocs(
-      collection(db, "users", user!.uid, "tasks")
-    );
-    let todosArray: { id: string; done: boolean; todo: string }[] = [];
-    querySnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-      todosArray.push({ ...doc.data(), id: doc.id });
-      setTodos(todosArray);
-    });
-  }; */
-  /* useEffect(() => {
+
+  useEffect(() => {
     getTodos()
-  },[user]); */
+  },[]);
   const timestamp = Date.now()
   const addTodo = async (e: React.BaseSyntheticEvent) => {
     e.preventDefault();
@@ -114,7 +100,7 @@ const ToDoList: React.FC<Props> = ({ setOpen }) => {
 
   return (
     <>
-      <Button onClick={getTodos}>get it</Button>
+     
       
         <Box
           component="form"
@@ -160,6 +146,7 @@ const ToDoList: React.FC<Props> = ({ setOpen }) => {
      
 
       <div className="todolist">
+        {todos.length>0?
         <AnimatePresence initial={false}>
           {todos.map((todo, index) => (
             <Todo
@@ -175,7 +162,8 @@ const ToDoList: React.FC<Props> = ({ setOpen }) => {
               edit={editTask}
             />
           ))}
-        </AnimatePresence>
+        </AnimatePresence>:
+        <Typography variant="h4" align="center">No tasks!</Typography>}
       </div>
 
       <Snackbar

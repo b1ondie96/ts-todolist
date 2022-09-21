@@ -13,11 +13,14 @@ import { signInWithEmailAndPassword,signInWithPopup, GoogleAuthProvider, } from 
 import { auth,db } from "./firebase";
 
 import { query, getDocs, collection, where, addDoc } from "firebase/firestore";
+import ForgotPw from "./ForgotPw";
 
 interface Props {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setForgotPw:React.Dispatch<React.SetStateAction<boolean>>;
+  alertScs:boolean
 }
-const LoginForm: React.FC<Props> = ({ setOpen }) => {
+const LoginForm: React.FC<Props> = ({ setOpen,setForgotPw,alertScs }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
@@ -25,6 +28,8 @@ const LoginForm: React.FC<Props> = ({ setOpen }) => {
   const [showMailHelper, setShowMailHelper] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMsg, setAlertMsg] = useState("");
+  
+  
 
   const isValidEmail = (email: string) => {
     return /\S+@\S+\.\S+/.test(email);
@@ -108,18 +113,23 @@ const LoginForm: React.FC<Props> = ({ setOpen }) => {
           "& > :not(style)": { m: 1, width: "clamp(60%,100%,350px)" },
         }}
         autoComplete="off"
-      >
-        <Typography variant="h4" align="center">
+      ><Typography variant="h4" align="center">
           Login
         </Typography>
-        {showAlert && (
+      {showAlert && 
           <Alert
             style={{ margin: "14px 8px", padding: "10px 16px" }}
             severity="error"
           >
             {alertMsg}
-          </Alert>
-        )}
+          </Alert>}
+          {alertScs&&<Alert
+            style={{ margin: "14px 8px", padding: "10px 16px" }}
+            severity="success"
+          >
+            Email with reset link sent!
+          </Alert>}
+        
 
         <TextField
           margin="normal"
@@ -139,7 +149,7 @@ const LoginForm: React.FC<Props> = ({ setOpen }) => {
           type={showPw ? "text" : "password"}
           variant="outlined"
           helperText={
-            showPwHelper ? <Link href="#">Forgot password?</Link> : " "
+            showPwHelper ? <Button variant='text' onClick={()=>setForgotPw(true)}>Forgot password?</Button> : " "
           }
           FormHelperTextProps={{
             sx: { fontSize: "0.9rem", fontWeight: "500" },
@@ -188,6 +198,8 @@ const LoginForm: React.FC<Props> = ({ setOpen }) => {
         >
           Login with Google
         </Button>
+       
+       
       </Box>
     </>
   );
