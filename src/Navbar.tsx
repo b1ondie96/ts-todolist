@@ -1,26 +1,19 @@
 import * as React from "react";
-
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
-import Badge from "@mui/material/Badge";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
-import AccountCircle from "@mui/icons-material/AccountCircle";
-import MailIcon from "@mui/icons-material/Mail";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import MoreIcon from "@mui/icons-material/MoreVert";
 import { UserContext } from "./App";
 import { Avatar, Button } from "@mui/material";
-import {logout} from './firebase'
+import { logout } from "./firebase";
 
 interface Props {
-   
-    setOpen:React.Dispatch<React.SetStateAction<boolean>>
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
-const Navbar:React.FC<Props>=({setOpen})=> {
+const Navbar: React.FC<Props> = ({ setOpen }) => {
   const user = React.useContext(UserContext);
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -51,12 +44,12 @@ const Navbar:React.FC<Props>=({setOpen})=> {
               letterSpacing: ".3rem",
               color: "inherit",
               textDecoration: "none",
-              flexGrow:1
+              flexGrow: 1,
             }}
           >
-            TO DO LIST  
+            TO DO LIST
           </Typography>
-          {user&& `${user.email}`}
+          {user && `${user.email}`}
           {user ? (
             <div>
               <IconButton
@@ -89,12 +82,20 @@ const Navbar:React.FC<Props>=({setOpen})=> {
                 <MenuItem onClick={logout}>Logout</MenuItem>
               </Menu>
             </div>
-          ):
-          <Button variant="contained" color="warning" onClick={()=>{setOpen(true)}}>LOGIN</Button>
-          }
+          ) : (
+            <Button
+              variant="contained"
+              color="warning"
+              onClick={() => {
+                setOpen(true);
+              }}
+            >
+              LOGIN
+            </Button>
+          )}
         </Toolbar>
       </AppBar>
     </Box>
   );
-}
-export default Navbar
+};
+export default Navbar;

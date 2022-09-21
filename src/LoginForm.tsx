@@ -1,8 +1,7 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import Box from "@mui/material/Box";
-import { Button, Link, TextField, Typography } from "@mui/material";
+import { Button, TextField, Typography } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
-import IconButton from "@mui/material/IconButton";
 import Alert from "@mui/material/Alert";
 import Divider from "@mui/material/Divider";
 import Visibility from "@mui/icons-material/Visibility";
@@ -13,7 +12,7 @@ import { signInWithEmailAndPassword,signInWithPopup, GoogleAuthProvider, } from 
 import { auth,db } from "./firebase";
 
 import { query, getDocs, collection, where, addDoc } from "firebase/firestore";
-import ForgotPw from "./ForgotPw";
+
 
 interface Props {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
