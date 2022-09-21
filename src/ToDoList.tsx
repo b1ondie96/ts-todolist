@@ -46,7 +46,7 @@ const ToDoList: React.FC<Props> = ({ setOpen }) => {
   
   
   const getTodos = () => { 
-    const q = query(collection(db, "users", user?.uid, "tasks"));
+    const q = query(collection(db, "users", user!.uid, "tasks"));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const todosArray: any[] = [];
       querySnapshot.forEach((doc) => {
@@ -77,7 +77,7 @@ const ToDoList: React.FC<Props> = ({ setOpen }) => {
         todo: todo.task,
         done: false,
         timestamp:timestamp
-      }).then( setTodo({ task: "" }))
+      }).then(setTodo({ task: "" })!)
      
       setTextErr(false);
 
@@ -88,7 +88,7 @@ const ToDoList: React.FC<Props> = ({ setOpen }) => {
     }
   };
   const removeTodo = async (id: string) => {
-    await deleteDoc(doc(db, "users", user?.uid, "tasks", id));
+    await deleteDoc(doc(db, "users", user!.uid, "tasks", id!));
     setSnack({ ...snack, show: true, msg: "Task deleted" });
   };
   const handleChange = (e: React.BaseSyntheticEvent) => {
@@ -99,17 +99,17 @@ const ToDoList: React.FC<Props> = ({ setOpen }) => {
     editTask: string | undefined
   ) => {
     await setDoc(
-      doc(db, "users", user?.uid, "tasks", id),
+      doc(db, "users", user!.uid, "tasks", id!),
       { todo: editTask },
       { merge: true }
-    ).then(setSnack({show: true, msg: "Task updated" }));
+    ).then(setSnack({show: true, msg: "Task updated" })!);
   };
   const handleCheck = async (id: string) => {
     await setDoc(
-      doc(db, "users", user?.uid, "tasks", id),
+      doc(db, "users", user!.uid, "tasks", id),
       { done: true,completed:timestamp },
       { merge: true }
-    ).then(setSnack({show: true, msg: "Task done!" }));
+    ).then(setSnack({show: true, msg: "Task done!" })!);
   };
 
   return (
