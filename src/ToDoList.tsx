@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import IconButton from "@mui/material/IconButton";
@@ -9,117 +9,155 @@ import Typography from "@mui/material/Typography";
 import { nanoid } from "nanoid";
 import { Button } from "@mui/material";
 import { AnimatePresence } from "framer-motion";
-
+import { db } from "./firebase";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import {
+  addDoc,
+  collection,
+  doc,
+  setDoc,
+  updateDoc,
+  serverTimestamp,
+  getDocs,
+  deleteDoc,
+  query,
+  onSnapshot,
+  Timestamp,
+} from "firebase/firestore";
+import { UserContext } from "./App";
 
 interface Todos {
   id: string;
-  task: string;
+  todo: string;
   done: boolean;
+  timestamp:number
+  completed:number
+}
+interface Props {
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-function ToDoList() {
+const ToDoList: React.FC<Props> = ({ setOpen }) => {
   const [textErr, setTextErr] = useState(false);
-  const [todos, setTodos] = useState<Todos[]>(
-    JSON.parse(window.localStorage.getItem("todos")!) || []
-  );
+  const [todos, setTodos] = useState<Todos[]>([]);
   const [todo, setTodo] = useState({ task: "" });
   const [snack, setSnack] = useState({ show: false, msg: "" });
-  const itemAnimation = {
-    hidden: { x: -2000 },
-    animate: {
-      x: 0,
-      transition: {
-        duration: 0.5,
-        type: "easeOut",
-      },
-    },
-    exit: { opacity: 0 },
-  };
-  useEffect(() => {
-    window.localStorage.setItem("todos", JSON.stringify(todos));
-  }, [todos]);
-
-  const addTodo = (e: React.BaseSyntheticEvent) => {
+  const user = useContext(UserContext);
+  
+  
+  const getTodos = () => { 
+    const q = query(collection(db, "users", user?.uid, "tasks"));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const todosArray: any[] = [];
+      querySnapshot.forEach((doc) => {
+        todosArray.unshift({ ...doc.data(), id: doc.id });
+        setTodos(todosArray);
+      });
+    });
+   }
+  /* const getTodos = async () => {
+    const querySnapshot = await getDocs(
+      collection(db, "users", user!.uid, "tasks")
+    );
+    let todosArray: { id: string; done: boolean; todo: string }[] = [];
+    querySnapshot.forEach((doc) => {
+      // doc.data() is never undefined for query doc snapshots
+      todosArray.push({ ...doc.data(), id: doc.id });
+      setTodos(todosArray);
+    });
+  }; */
+  /* useEffect(() => {
+    getTodos()
+  },[user]); */
+  const timestamp = Date.now()
+  const addTodo = async (e: React.BaseSyntheticEvent) => {
     e.preventDefault();
     if (todo.task.length >= 4) {
+      const docRef = await setDoc(doc(db, "users", user!.uid, 'tasks',timestamp.toString()), {
+        todo: todo.task,
+        done: false,
+        timestamp:timestamp
+      }).then( setTodo({ task: "" }))
+     
       setTextErr(false);
-      setTodos([{ ...todo, id: nanoid(), done: false }, ...todos]);
+
       setTodo({ task: "" });
       setSnack({ ...snack, show: true, msg: "Task added" });
     } else {
       setTextErr(true);
     }
   };
-  const removeTodo = (id: string) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
+  const removeTodo = async (id: string) => {
+    await deleteDoc(doc(db, "users", user?.uid, "tasks", id));
     setSnack({ ...snack, show: true, msg: "Task deleted" });
   };
   const handleChange = (e: React.BaseSyntheticEvent) => {
     setTodo({ ...todo, task: e.target.value });
   };
-  const editTask = (id: string, editTask: string) => {
-    setTodos(
-      todos.map((t) => {
-        if (t.id === id) {
-          return { ...t, task: editTask };
-        }
-        setSnack({ ...snack, show: true, msg: "Task updated" });
-        return t;
-      })
-    );
+  const editTask = async (
+    id: string | undefined,
+    editTask: string | undefined
+  ) => {
+    await setDoc(
+      doc(db, "users", user?.uid, "tasks", id),
+      { todo: editTask },
+      { merge: true }
+    ).then(setSnack({show: true, msg: "Task updated" }));
   };
-  const handleCheck = (id: string) => {
-    setTodos(
-      todos.map((t) => {
-        if (t.id === id) {
-          return { ...t, done: !t.done };
-        }
-        return t;
-      })
-    );
+  const handleCheck = async (id: string) => {
+    await setDoc(
+      doc(db, "users", user?.uid, "tasks", id),
+      { done: true,completed:timestamp },
+      { merge: true }
+    ).then(setSnack({show: true, msg: "Task done!" }));
   };
+
   return (
     <>
-      <Box
-        component="form"
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "column",
-          marginTop: "1rem",
-          "& .MuiTextField-root": { m: 1, width: "25ch" },
-        }}
-        noValidate
-        autoComplete="off"
-        onSubmit={addTodo}
-      >
-        <Typography variant="h5">What do you want to do?</Typography>
-        <Button onClick={() => setTodos([])}>Delete all tasks</Button>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <TextField
-            error={textErr}
-            id="outlined-error-helper-text"
-            label="New task"
-            placeholder="New task"
-            value={todo.task}
-            onChange={handleChange}
-            helperText={textErr && "4 characters minimum"}
-            sx={{ backgroundColor: "white" }}
-          />
-          {todo.task.length >= 4 && (
-            <IconButton
-              aria-label="add task"
-              size="large"
-              sx={{ "&:hover": { color: "success.main" } }}
-              onClick={addTodo}
-            >
-              <CheckIcon fontSize="inherit" />
-            </IconButton>
-          )}
-        </div>
-      </Box>
+      <Button onClick={getTodos}>get it</Button>
+      
+        <Box
+          component="form"
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexDirection: "column",
+            marginTop: "1rem",
+            "& .MuiTextField-root": { m: 1, width: "25ch" },
+          }}
+          noValidate
+          autoComplete="off"
+          onSubmit={addTodo}
+        >
+          <Typography variant="h5">What do you want to do?</Typography>
+
+          <div
+            style={{ display: "flex", alignItems: "center", marginTop: "25px" }}
+          >
+            <TextField
+              error={textErr}
+              id="outlined-error-helper-text"
+              label="New task"
+              placeholder="New task"
+              value={todo.task}
+              onChange={handleChange}
+              helperText={textErr && "4 characters minimum"}
+              sx={{ backgroundColor: "white" }}
+            />
+            {todo.task.length >= 4 && (
+              <IconButton
+                aria-label="add task"
+                size="large"
+                sx={{ "&:hover": { color: "success.main" } }}
+                onClick={addTodo}
+              >
+                <CheckIcon fontSize="inherit" />
+              </IconButton>
+            )}
+          </div>
+        </Box>
+     
 
       <div className="todolist">
         <AnimatePresence initial={false}>
@@ -129,7 +167,9 @@ function ToDoList() {
               key={todo.id}
               id={todo.id}
               done={todo.done}
-              task={todo.task}
+              task={todo.todo}
+              timestamp={todo.timestamp}
+              completed={todo.completed}
               toggleDone={handleCheck}
               remove={removeTodo}
               edit={editTask}
@@ -146,6 +186,6 @@ function ToDoList() {
       />
     </>
   );
-}
+};
 
 export default ToDoList;

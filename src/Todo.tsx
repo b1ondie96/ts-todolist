@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext } from "react";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 import Checkbox from "@mui/material/Checkbox";
@@ -10,14 +10,18 @@ import TextField from "@mui/material/TextField";
 import CheckIcon from "@mui/icons-material/Check";
 import Badge from "@mui/material/Badge";
 import { motion } from "framer-motion";
+import { UserContext } from "./App";
+import Moment from "moment";
 interface Props {
   id: string;
-  done: boolean;
-  task: string;
+  done: boolean | undefined;
+  task: string | undefined;
   toggleDone: (id: string) => void;
   remove: (id: string) => void;
-  edit: (id: string, editTask: string) => void;
+  edit: (id?: string, editTask?: string) => void;
   index: number;
+  timestamp: number;
+  completed: number;
 }
 
 const Todo: React.FC<Props> = ({
@@ -27,14 +31,19 @@ const Todo: React.FC<Props> = ({
   toggleDone,
   remove,
   edit,
-  index,
+  timestamp,
+  completed,
 }) => {
   const [isEdit, setIsEdit] = useState(false);
   const [editTask, setEditTask] = useState(task);
   const [textErr, setTextErr] = useState(false);
   const changeRef = useRef(null);
+  const user = useContext(UserContext);
+  const formatedTime = Moment(timestamp).format("DD-MM-YYYY, HH:mm");
+  const formatedComplete = Moment(completed).format("DD-MM-YYYY, HH:mm");
+
   const handleEdit = () => {
-    if (editTask.length >= 4) {
+    if (editTask!.length >= 4) {
       setIsEdit(!isEdit);
       edit(id, editTask);
       setTextErr(false);
@@ -44,6 +53,9 @@ const Todo: React.FC<Props> = ({
   };
   const handleChange = (e: React.BaseSyntheticEvent) => {
     setEditTask(e.target.value);
+  };
+  const markDone = () => {
+    toggleDone(id);
   };
   const itemAnimation = {
     hidden: { x: -2000, opacity: 0 },
@@ -94,6 +106,7 @@ const Todo: React.FC<Props> = ({
               elevation={4}
               style={{
                 display: "flex",
+                
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "1.25rem",
@@ -102,11 +115,10 @@ const Todo: React.FC<Props> = ({
               {!done && !isEdit && (
                 <Checkbox
                   checked={done}
-                  onChange={() => toggleDone(id)}
+                  onChange={() => markDone()}
                   sx={{ "& .MuiSvgIcon-root": { fontSize: 28 } }}
                 />
               )}
-
               {isEdit ? (
                 <>
                   <Box
@@ -144,7 +156,6 @@ const Todo: React.FC<Props> = ({
                   {task}
                 </Typography>
               )}
-
               <div>
                 {!isEdit && !done && (
                   <IconButton
@@ -158,11 +169,17 @@ const Todo: React.FC<Props> = ({
                 <IconButton
                   aria-label="delete"
                   sx={{ "&:hover": { color: "error.main" } }}
-                  onClick={() => remove(id)}
+                  onClick={() => remove(id!)}
                 >
                   <DeleteIcon />
                 </IconButton>
               </div>
+              <Typography variant="subtitle2" fontSize={10} style={{position:'absolute',bottom:0,right:0, margin:'2px'}}>
+                Added at {formatedTime}
+              </Typography>
+              <Typography variant="subtitle2" fontSize={10} style={{position:'absolute',bottom:0,left:0, margin:'2px'}}>
+               {completed&& `Completed at ${formatedComplete}`}
+              </Typography>
             </Paper>
           </Badge>
         </Box>
